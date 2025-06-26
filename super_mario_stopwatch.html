@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Super Mario Stopwatch</title>
+  <style>
+    @import url('https://fonts.cdnfonts.com/css/new-super-mario-font-u');
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+    }
+
+    .stopwatch {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 0.5vw;
+      font-family: 'New Super Mario Font U', sans-serif;
+      padding: 1.2vw;
+    }
+
+    .unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .digits {
+      font-size: 9.72vw;
+      font-weight: bold;
+      line-height: 1;
+      display: flex;
+      gap: 0.01em;
+      letter-spacing: -0.05em;
+      margin-bottom: -2vw;
+      text-shadow:
+        1px 1px 0 #000,
+        2px 2px 0 #000,
+        3px 3px 0 #000,
+        4px 4px 0 #000;
+    }
+
+    .digits span {
+      display: inline-block;
+    }
+
+    .label {
+      margin-top: 0;
+      font-size: 1.9vw;
+      font-weight: bold;
+      letter-spacing: -0.07em;
+      text-shadow:
+        1px 1px 0 #000,
+        2px 2px 0 #000,
+        3px 3px 0 #000,
+        4px 4px 0 #000;
+      transform: scaleX(0.84);
+      transform-origin: center;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .label span {
+      display: inline-block;
+    }
+
+    @media (max-width: 600px) {
+      .digits {
+        font-size: 11.5vw;
+      }
+      .label {
+        font-size: 3.8vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stopwatch">
+    <div class="unit">
+      <div class="digits"><span id="h0">0</span><span id="h1">0</span></div>
+      <div class="label" id="label-h"></div>
+    </div>
+    <div class="unit">
+      <div class="digits"><span id="m0">0</span><span id="m1">0</span></div>
+      <div class="label" id="label-m"></div>
+    </div>
+    <div class="unit">
+      <div class="digits"><span id="s0">0</span><span id="s1">0</span></div>
+      <div class="label" id="label-s"></div>
+    </div>
+  </div>
+
+  <script>
+    window.onload = function () {
+      const red = '#ff0202';
+      const green = '#00d300';
+      const cyan = '#22ddf8';
+      const yellow = '#fed430';
+
+      const orderedColors = [
+        red, green, cyan, yellow, cyan, red,
+        cyan, green, yellow, yellow, red, green, red, cyan,
+        yellow, cyan, cyan, red, red, cyan, red, green, cyan, green, red
+      ];
+
+      const digitColors = [cyan, cyan, red, green, yellow];
+
+      function getSmartColor(prevColor, pool, repeatChance = 1 / 6) {
+        if (prevColor && Math.random() < repeatChance) return prevColor;
+        let color;
+        let attempts = 0;
+        do {
+          color = pool[Math.floor(Math.random() * pool.length)];
+          attempts++;
+        } while (color === prevColor && attempts < 10);
+        return color;
+      }
+
+      const prev = { h: ['0', '0'], m: ['0', '0'], s: ['0', '0'] };
+      let total = 0;
+
+      ['h', 'm', 's'].forEach(unit => {
+        let lastColor = null;
+        for (let i = 0; i < 2; i++) {
+          const el = document.getElementById(unit + i);
+          const color = getSmartColor(lastColor, digitColors);
+          el.style.color = color;
+          lastColor = color;
+        }
+      });
+
+      const labels = {
+        h: 'HOURS',
+        m: 'MINUTES',
+        s: 'SECONDS'
+      };
+
+      for (let key in labels) {
+        const container = document.getElementById(`label-${key}`);
+        container.innerHTML = '';
+        let lastColor = null;
+        labels[key].split('').forEach(char => {
+          const span = document.createElement('span');
+          span.textContent = char;
+          const color = getSmartColor(lastColor, orderedColors, 0);
+          span.style.color = color;
+          lastColor = color;
+          container.appendChild(span);
+        });
+      }
+
+      setInterval(() => {
+        total++;
+        const h = String(Math.floor(total / 3600)).padStart(2, '0');
+        const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+        const s = String(total % 60).padStart(2, '0');
+
+        [['h', h], ['m', m], ['s', s]].forEach(([unit, val]) => {
+          let lastColor = null;
+          for (let i = 0; i < 2; i++) {
+            const el = document.getElementById(unit + i);
+            if (val[i] !== prev[unit][i]) {
+              const color = getSmartColor(lastColor, digitColors, 1 / 6);
+              el.textContent = val[i];
+              el.style.color = color;
+              lastColor = color;
+            } else {
+              el.textContent = val[i];
+              lastColor = el.style.color;
+            }
+          }
+          prev[unit] = [val[0], val[1]];
+        });
+      }, 1000);
+    };
+  </script>
+</body>
+</html>
