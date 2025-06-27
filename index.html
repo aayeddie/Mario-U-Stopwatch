@@ -19,6 +19,8 @@
       gap: 0.5vw;
       font-family: 'New Super Mario Font U', sans-serif;
       padding: 1.2vw;
+      user-select: none;
+      cursor: pointer;
     }
 
     .unit {
@@ -28,7 +30,7 @@
     }
 
     .digits {
-      font-size: 11.5vw; /* Forced mobile size */
+      font-size: 11.5vw;
       font-weight: bold;
       line-height: 1;
       display: flex;
@@ -48,7 +50,7 @@
 
     .label {
       margin-top: 0;
-      font-size: 3.8vw; /* Forced mobile label size */
+      font-size: 3.8vw;
       font-weight: bold;
       letter-spacing: -0.07em;
       text-shadow:
@@ -68,7 +70,7 @@
   </style>
 </head>
 <body>
-  <div class="stopwatch">
+  <div class="stopwatch" id="stopwatch">
     <div class="unit">
       <div class="digits"><span id="h0">0</span><span id="h1">0</span></div>
       <div class="label" id="label-h"></div>
@@ -111,7 +113,9 @@
 
       const prev = { h: ['0', '0'], m: ['0', '0'], s: ['0', '0'] };
       let total = 0;
+      let paused = false;
 
+      // Assign initial digit colors
       ['h', 'm', 's'].forEach(unit => {
         let lastColor = null;
         for (let i = 0; i < 2; i++) {
@@ -122,6 +126,7 @@
         }
       });
 
+      // Assign label colors
       const labels = {
         h: 'HOURS',
         m: 'MINUTES',
@@ -142,7 +147,10 @@
         });
       }
 
+      // Stopwatch logic
       setInterval(() => {
+        if (paused) return;
+
         total++;
         const h = String(Math.floor(total / 3600)).padStart(2, '0');
         const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
@@ -165,6 +173,11 @@
           prev[unit] = [val[0], val[1]];
         });
       }, 1000);
+
+      // Toggle pause on click/tap
+      document.getElementById('stopwatch').addEventListener('click', () => {
+        paused = !paused;
+      });
     };
   </script>
 </body>
